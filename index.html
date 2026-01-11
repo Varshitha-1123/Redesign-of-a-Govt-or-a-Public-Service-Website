@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GovConnect | Modern Public Services Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>">
+    <style>
+        /* Accessibility Focus Styles */
+        :focus {
+            outline: 3px solid #005EA2;
+            outline-offset: 2px;
+        }
+        
+        /* Skip to main content link for screen readers */
+        .skip-to-main {
+            position: absolute;
+            left: -9999px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+        
+        .skip-to-main:focus {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: auto;
+            height: auto;
+            padding: 10px 20px;
+            background: #005EA2;
+            color: white;
+            z-index: 9999;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        
+        /* Loading screen */
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #005EA2 0%, #1A4480 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-logo {
+            font-size: 4rem;
+            color: white;
+            margin-bottom: 20px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .loading-text {
+            color: white;
+            font-size: 1.2rem;
+            font-family: 'Public Sans', sans-serif;
+        }
+        
+        .loading-progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        
+        .loading-progress-bar {
+            height: 100%;
+            background: white;
+            width: 0%;
+            animation: loading 2s ease-in-out forwards;
+        }
+        
+        @keyframes loading {
+            to { width: 100%; }
+        }
+        
+        /* High contrast mode toggle */
+        .contrast-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #005EA2;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: none;
+            font-size: 1.2rem;
+        }
+        
+        .contrast-toggle:hover {
+            background: #1A4480;
+        }
+        
+        /* Language selector */
+        .language-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .language-btn {
+            background: none;
+            border: 1px solid #DFDFDF;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .language-btn.active {
+            background: #005EA2;
+            color: white;
+            border-color: #005EA2;
+        }
+        
+        /* Emergency banner */
+        .emergency-banner {
+            background: #D83933;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+            font-weight: 600;
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.9; }
+        }
+        
+        .emergency-banner a {
+            color: white;
+            text-decoration: underline;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <!-- Skip to main content link -->
+    <a href="#main-content" class="skip-to-main">Skip to main content</a>
+    
+    <!-- Loading Screen -->
+    <div id="loadingScreen">
+        <div class="loading-logo">
+            <i class="fas fa-landmark"></i>
+        </div>
+        <div class="loading-text">Loading GovConnect Services...</div>
+        <div class="loading-progress">
+            <div class="loading-progress-bar"></div>
+        </div>
+    </div>
+
+    <!-- High Contrast Toggle -->
+    <button class="contrast-toggle" id="contrastToggle" aria-label="Toggle high contrast mode">
+        <i class="fas fa-adjust"></i>
+    </button>
+
+    <div class="container">
+        <!-- Emergency Banner -->
+        <div class="emergency-banner" id="emergencyBanner" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span id="emergencyMessage">Emergency Alert: Severe weather warning in effect. </span>
+            <a href="#" id="emergencyLink">Learn more and take precautions</a>
+        </div>
+
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="top-header-content">
+                <div class="official-seal">
+                    <i class="fas fa-landmark"></i>
+                    <div class="seal-text">
+                        <span class="seal-title">GovConnect</span>
+                        <span class="seal-subtitle">Public Services Portal</span>
+                    </div>
+                </div>
+                
+                <div class="header-actions">
+                    <div class="language-selector">
+                        <button class="language-btn active" data-lang="en">EN</button>
+                        <button class="language-btn" data-lang="es">ES</button>
+                        <button class="language-btn" data-lang="fr">FR</button>
+                    </div>
+                    
+                    <div class="header-search">
+                        <input type="text" id="globalSearch" placeholder="Search services, forms, information..." aria-label="Search government services">
+                        <button class="search-btn" id="globalSearchBtn" aria-label="Search">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="user-actions">
+                        <button class="btn-login" id="loginBtn">
+                            <i class="fas fa-user"></i>
+                            <span>Sign In</span>
+                        </button>
+                        <button class="menu-toggle" id="mobileMenuToggle" aria-label="Toggle mobile menu">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Navigation -->
+        <nav class="main-nav" aria-label="Main navigation">
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#" id="homeLink" class="active"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="#" id="servicesLink"><i class="fas fa-concierge-bell"></i> Services</a></li>
+                <li><a href="#" id="documentsLink"><i class="fas fa-file-alt"></i> Documents & Forms</a></li>
+                <li><a href="#" id="paymentsLink"><i class="fas fa-credit-card"></i> Make a Payment</a></li>
+                <li><a href="#" id="newsLink"><i class="fas fa-newspaper"></i> News & Updates</a></li>
+                <li><a href="#" id="contactLink"><i class="fas fa-phone-alt"></i> Contact</a></li>
+                <li><a href="#" id="accessibilityLink"><i class="fas fa-universal-access"></i> Accessibility</a></li>
+            </ul>
+        </nav>
+
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" id="mobileMenu">
+            <div class="mobile-menu-header">
+                <h3>Menu</h3>
+                <button class="menu-close" id="mobileMenuClose" aria-label="Close menu">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <ul class="mobile-nav">
+                <li><a href="#" id="mobileHomeLink"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="#" id="mobileServicesLink"><i class="fas fa-concierge-bell"></i> Services</a></li>
+                <li><a href="#" id="mobileDocumentsLink"><i class="fas fa-file-alt"></i> Documents & Forms</a></li>
+                <li><a href="#" id="mobilePaymentsLink"><i class="fas fa-credit-card"></i> Make a Payment</a></li>
+                <li><a href="#" id="mobileNewsLink"><i class="fas fa-newspaper"></i> News & Updates</a></li>
+                <li><a href="#" id="mobileContactLink"><i class="fas fa-phone-alt"></i> Contact</a></li>
+                <li><a href="#" id="mobileAccessibilityLink"><i class="fas fa-universal-access"></i> Accessibility</a></li>
+            </ul>
+            <div class="mobile-actions">
+                <button class="btn-login mobile-login">
+                    <i class="fas fa-user"></i>
+                    <span>Sign In to Your Account</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main id="main-content" class="main-content">
+            <!-- Hero Section -->
+            <section class="hero-section" id="heroSection">
+                <div class="hero-content">
+                    <h1>Welcome to GovConnect</h1>
+                    <p class="hero-subtitle">Your modern gateway to government services and information. Find what you need quickly and easily.</p>
+                    
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <i class="fas fa-users"></i>
+                            <div>
+                                <h3>2.5M+</h3>
+                                <p>Citizens Served</p>
+                            </div>
+                        </div>
+                        <div class="stat">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <h3>65%</h3>
+                                <p>Faster Processing</p>
+                            </div>
+                        </div>
+                        <div class="stat">
+                            <i class="fas fa-mobile-alt"></i>
+                            <div>
+                                <h3>24/7</h3>
+                                <p>Access Anywhere</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="hero-quicklinks">
+                    <h2>Quick Access</h2>
+                    <div class="quicklinks-grid">
+                        <a href="#" class="quicklink" id="quickLicense">
+                            <i class="fas fa-id-card"></i>
+                            <span>Driver's License</span>
+                        </a>
+                        <a href="#" class="quicklink" id="quickTax">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <span>Tax Services</span>
+                        </a>
+                        <a href="#" class="quicklink" id="quickVote">
+                            <i class="fas fa-vote-yea"></i>
+                            <span>Voter Registration</span>
+                        </a>
+                        <a href="#" class="quicklink" id="quickPermit">
+                            <i class="fas fa-file-signature"></i>
+                            <span>Permits & Licenses</span>
+                        </a>
+                        <a href="#" class="quicklink" id="quickBenefits">
+                            <i class="fas fa-hand-holding-heart"></i>
+                            <span>Benefits & Assistance</span>
+                        </a>
+                        <a href="#" class="quicklink" id="quickReport">
+                            <i class="fas fa-flag"></i>
+                            <span>Report an Issue</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard Sections -->
+            <div class="dashboard-sections">
+                <!-- Home Section (Default) -->
+                <section class="dashboard-section active" id="homeSection">
+                    <!-- Service Categories -->
+                    <div class="service-categories">
+                        <h2>Browse Services by Category</h2>
+                        <div class="categories-grid" id="categoriesGrid">
+                            <!-- Categories will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Popular Services -->
+                    <div class="popular-services">
+                        <div class="section-header">
+                            <h2>Most Popular Services</h2>
+                            <a href="#" class="view-all" id="viewAllServices">View All Services →</a>
+                        </div>
+                        
+                        <div class="services-grid" id="servicesGrid">
+                            <!-- Services will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <!-- News & Alerts -->
+                    <div class="news-alerts">
+                        <div class="news-section">
+                            <h2>Government News & Updates</h2>
+                            <div class="news-grid" id="newsGrid">
+                                <!-- News will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <div class="alerts-section">
+                            <h2>Important Alerts</h2>
+                            <div class="alerts-list" id="alertsList">
+                                <!-- Alerts will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Service Status -->
+                    <div class="service-status">
+                        <h2>Service Status</h2>
+                        <div class="status-grid" id="statusGrid">
+                            <!-- Status will be loaded here -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Services Section -->
+                <section class="dashboard-section" id="servicesSection">
+                    <div class="section-header">
+                        <h1>Government Services</h1>
+                        <p>Access all available government services in one place</p>
+                    </div>
+                    
+                    <div class="services-search">
+                        <input type="text" id="servicesSearch" placeholder="Search for a specific service...">
+                        <button class="btn-primary" id="servicesSearchBtn">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                    
+                    <div class="services-directory" id="servicesDirectory">
+                        <!-- All services will be loaded here -->
+                    </div>
+                </section>
+
+                <!-- Documents Section -->
+                <section class="dashboard-section" id="documentsSection">
+                    <div class="section-header">
+                        <h1>Documents & Forms</h1>
+                        <p>Download official forms and documents</p>
+                    </div>
+                    
+                    <div class="documents-filters">
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" data-filter="all">All Forms</button>
+                            <button class="filter-btn" data-filter="tax">Tax Forms</button>
+                            <button class="filter-btn" data-filter="license">Licenses</button>
+                            <button class="filter-btn" data-filter="application">Applications</button>
+                            <button class="filter-btn" data-filter="permit">Permits</button>
+                            <button class="filter-btn" data-filter="certificate">Certificates</button>
+                        </div>
+                        
+                        <div class="sort-options">
+                            <label for="sortDocuments">Sort by:</label>
+                            <select id="sortDocuments">
+                                <option value="popular">Most Popular</option>
+                                <option value="name">Name A-Z</option>
+                                <option value="date">Recently Updated</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="documents-grid" id="documentsGrid">
+                        <!-- Documents will be loaded here -->
+                    </div>
+                </section>
+
+                <!-- Payments Section -->
+                <section class="dashboard-section" id="paymentsSection">
+                    <div class="section-header">
+                        <h1>Make a Payment</h1>
+                        <p>Pay bills, fees, and taxes securely online</p>
+                    </div>
+                    
+                    <div class="payment-options">
+                        <div class="payment-methods">
+                            <h2>Payment Methods</h2>
+                            <div class="methods-grid">
+                                <div class="method-card" data-method="credit">
+                                    <i class="fas fa-credit-card"></i>
+                                    <h3>Credit/Debit Card</h3>
+                                    <p>Visa, MasterCard, Discover, American Express</p>
+                                </div>
+                                <div class="method-card" data-method="bank">
+                                    <i class="fas fa-university"></i>
+                                    <h3>Bank Transfer</h3>
+                                    <p>Direct from your bank account</p>
+                                </div>
+                                <div class="method-card" data-method="digital">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    <h3>Digital Wallet</h3>
+                                    <p>Apple Pay, Google Pay, PayPal</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-form">
+                            <h2>Payment Details</h2>
+                            <form id="paymentForm">
+                                <div class="form-group">
+                                    <label for="paymentType">Payment Type *</label>
+                                    <select id="paymentType" required>
+                                        <option value="">Select payment type</option>
+                                        <option value="property">Property Tax</option>
+                                        <option value="income">Income Tax</option>
+                                        <option value="license">License Renewal</option>
+                                        <option value="permit">Permit Fee</option>
+                                        <option value="fine">Traffic Fine</option>
+                                        <option value="utility">Utility Bill</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="paymentAmount">Amount *</label>
+                                    <input type="number" id="paymentAmount" min="1" step="0.01" placeholder="0.00" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="paymentReference">Reference Number (Optional)</label>
+                                    <input type="text" id="paymentReference" placeholder="Enter reference number if available">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="paymentEmail">Email for Receipt *</label>
+                                    <input type="email" id="paymentEmail" placeholder="your.email@example.com" required>
+                                </div>
+                                
+                                <div class="payment-security">
+                                    <i class="fas fa-lock"></i>
+                                    <span>All payments are secured with 256-bit SSL encryption</span>
+                                </div>
+                                
+                                <button type="submit" class="btn-primary btn-pay">
+                                    <i class="fas fa-lock"></i> Make Secure Payment
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="payment-history" id="paymentHistory">
+                        <h2>Recent Payments</h2>
+                        <!-- Payment history will be loaded here -->
+                    </div>
+                </section>
+
+                <!-- News Section -->
+                <section class="dashboard-section" id="newsSection">
+                    <div class="section-header">
+                        <h1>News & Updates</h1>
+                        <p>Stay informed about government announcements and initiatives</p>
+                    </div>
+                    
+                    <div class="news-filters">
+                        <button class="news-filter active" data-filter="all">All News</button>
+                        <button class="news-filter" data-filter="announcement">Announcements</button>
+                        <button class="news-filter" data-filter="policy">Policy Updates</button>
+                        <button class="news-filter" data-filter="event">Events</button>
+                        <button class="news-filter" data-filter="report">Reports</button>
+                    </div>
+                    
+                    <div class="news-container" id="newsContainer">
+                        <!-- News articles will be loaded here -->
+                    </div>
+                    
+                    <div class="subscribe-news">
+                        <h3>Get Updates by Email</h3>
+                        <p>Subscribe to receive important government announcements</p>
+                        <form id="subscribeForm">
+                            <input type="email" placeholder="Enter your email address" required>
+                            <button type="submit" class="btn-secondary">Subscribe</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Contact Section -->
+                <section class="dashboard-section" id="contactSection">
+                    <div class="section-header">
+                        <h1>Contact Government Services</h1>
+                        <p>Get in touch with the right department</p>
+                    </div>
+                    
+                    <div class="contact-options">
+                        <div class="contact-methods">
+                            <div class="contact-card" id="contactPhone">
+                                <i class="fas fa-phone-alt"></i>
+                                <h3>By Phone</h3>
+                                <p class="contact-number">1-800-GOV-HELP</p>
+                                <p>24/7 helpline available</p>
+                                <button class="btn-secondary">Call Now</button>
+                            </div>
+                            
+                            <div class="contact-card" id="contactEmail">
+                                <i class="fas fa-envelope"></i>
+                                <h3>By Email</h3>
+                                <p>Send us a message</p>
+                                <p>Typically respond within 2 business days</p>
+                                <button class="btn-secondary" id="emailFormBtn">Send Email</button>
+                            </div>
+                            
+                            <div class="contact-card" id="contactChat">
+                                <i class="fas fa-comments"></i>
+                                <h3>Live Chat</h3>
+                                <p>Chat with a representative</p>
+                                <p>Available Mon-Fri, 8AM-6PM</p>
+                                <button class="btn-secondary" id="chatBtn">Start Chat</button>
+                            </div>
+                            
+                            <div class="contact-card" id="contactOffice">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <h3>In Person</h3>
+                                <p>Find a service center</p>
+                                <p>Over 50 locations statewide</p>
+                                <button class="btn-secondary" id="locationBtn">Find Location</button>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-form-container">
+                            <h2>Send a Message</h2>
+                            <form id="contactForm">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="contactName">Full Name *</label>
+                                        <input type="text" id="contactName" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="contactEmailInput">Email Address *</label>
+                                        <input type="email" id="contactEmailInput" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="contactDepartment">Department *</label>
+                                        <select id="contactDepartment" required>
+                                            <option value="">Select department</option>
+                                            <option value="tax">Tax Services</option>
+                                            <option value="license">Licensing</option>
+                                            <option value="health">Health Services</option>
+                                            <option value="transportation">Transportation</option>
+                                            <option value="housing">Housing</option>
+                                            <option value="general">General Inquiry</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="contactSubject">Subject *</label>
+                                        <input type="text" id="contactSubject" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contactMessage">Message *</label>
+                                    <textarea id="contactMessage" rows="6" required></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="contactAttachment">Attachments (Optional)</label>
+                                    <input type="file" id="contactAttachment" multiple>
+                                    <small>Maximum file size: 10MB each</small>
+                                </div>
+                                
+                                <button type="submit" class="btn-primary">Send Message</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="office-hours">
+                        <h3>General Office Hours</h3>
+                        <div class="hours-grid">
+                            <div class="day">
+                                <span>Monday - Friday</span>
+                                <span>8:00 AM - 6:00 PM</span>
+                            </div>
+                            <div class="day">
+                                <span>Saturday</span>
+                                <span>9:00 AM - 1:00 PM</span>
+                            </div>
+                            <div class="day">
+                                <span>Sunday</span>
+                                <span>Closed</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Accessibility Section -->
+                <section class="dashboard-section" id="accessibilitySection">
+                    <div class="section-header">
+                        <h1>Accessibility Services</h1>
+                        <p>Our commitment to serving all citizens</p>
+                    </div>
+                    
+                    <div class="accessibility-features">
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <i class="fas fa-eye"></i>
+                                <h3>Visual Assistance</h3>
+                                <p>Screen reader compatibility, high contrast mode, text resizing</p>
+                            </div>
+                            <div class="feature-card">
+                                <i class="fas fa-ear-deaf"></i>
+                                <h3>Hearing Assistance</h3>
+                                <p>Video relay services, captioning, TTY services</p>
+                            </div>
+                            <div class="feature-card">
+                                <i class="fas fa-wheelchair"></i>
+                                <h3>Physical Access</h3>
+                                <p>Wheelchair accessible offices, reserved parking</p>
+                            </div>
+                            <div class="feature-card">
+                                <i class="fas fa-brain"></i>
+                                <h3>Cognitive Support</h3>
+                                <p>Simple language options, step-by-step guidance</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accessibility-options">
+                        <h2>Customize Your Experience</h2>
+                        <div class="option-list">
+                            <div class="option-item">
+                                <h4>Text Size</h4>
+                                <div class="text-size-controls">
+                                    <button class="size-btn" data-size="small">A-</button>
+                                    <button class="size-btn active" data-size="medium">A</button>
+                                    <button class="size-btn" data-size="large">A+</button>
+                                </div>
+                            </div>
+                            
+                            <div class="option-item">
+                                <h4>Color Contrast</h4>
+                                <div class="contrast-controls">
+                                    <button class="contrast-btn" data-contrast="normal">Normal</button>
+                                    <button class="contrast-btn" data-contrast="high">High Contrast</button>
+                                    <button class="contrast-btn" data-contrast="dark">Dark Mode</button>
+                                </div>
+                            </div>
+                            
+                            <div class="option-item">
+                                <h4>Reading Assistance</h4>
+                                <button class="btn-secondary" id="readAloudBtn">
+                                    <i class="fas fa-volume-up"></i> Read Aloud
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accessibility-resources">
+                        <h2>Resources & Support</h2>
+                        <div class="resources-list">
+                            <a href="#" class="resource-link">
+                                <i class="fas fa-file-pdf"></i>
+                                <span>Accessibility Policy (PDF)</span>
+                            </a>
+                            <a href="#" class="resource-link">
+                                <i class="fas fa-hands-helping"></i>
+                                <span>Request Accommodations</span>
+                            </a>
+                            <a href="#" class="resource-link">
+                                <i class="fas fa-comments"></i>
+                                <span>Feedback & Suggestions</span>
+                            </a>
+                            <a href="#" class="resource-link">
+                                <i class="fas fa-phone-alt"></i>
+                                <span>Accessibility Helpline</span>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Feedback Widget -->
+            <div class="feedback-widget" id="feedbackWidget">
+                <button class="feedback-toggle" id="feedbackToggle" aria-label="Provide feedback">
+                    <i class="fas fa-comment-alt"></i>
+                </button>
+                <div class="feedback-form" id="feedbackForm">
+                    <h3>How can we improve?</h3>
+                    <form id="feedbackFormContent">
+                        <div class="form-group">
+                            <label for="feedbackRating">Rating</label>
+                            <div class="rating-stars">
+                                <i class="fas fa-star" data-rating="1"></i>
+                                <i class="fas fa-star" data-rating="2"></i>
+                                <i class="fas fa-star" data-rating="3"></i>
+                                <i class="fas fa-star" data-rating="4"></i>
+                                <i class="fas fa-star" data-rating="5"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="feedbackComment">Comments (Optional)</label>
+                            <textarea id="feedbackComment" rows="3" placeholder="Tell us about your experience..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">Submit Feedback</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer" role="contentinfo">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-landmark"></i>
+                        <div>
+                            <h3>GovConnect</h3>
+                            <p>Public Services Portal</p>
+                        </div>
+                    </div>
+                    <p class="footer-mission">Providing accessible, transparent, and efficient government services to all citizens.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Accessibility Statement</a></li>
+                        <li><a href="#">Sitemap</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Departments</h4>
+                    <ul>
+                        <li><a href="#">Tax Department</a></li>
+                        <li><a href="#">Motor Vehicles</a></li>
+                        <li><a href="#">Health Services</a></li>
+                        <li><a href="#">Education</a></li>
+                        <li><a href="#">Transportation</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Connect With Us</h4>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                    <div class="contact-info">
+                        <p><i class="fas fa-phone-alt"></i> 1-800-GOV-HELP</p>
+                        <p><i class="fas fa-envelope"></i> help@govconnect.gov</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2023 GovConnect Public Services Portal. All rights reserved.</p>
+                <p>This is an official government website. Any unauthorized access or use is prohibited.</p>
+            </div>
+        </footer>
+
+        <!-- Login Modal -->
+        <div class="modal" id="loginModal">
+            <div class="modal-content">
+                <button class="modal-close" id="loginModalClose" aria-label="Close login modal">&times;</button>
+                <div class="modal-body">
+                    <h2>Sign In to Your Account</h2>
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="loginUsername">Username or Email *</label>
+                            <input type="text" id="loginUsername" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="loginPassword">Password *</label>
+                            <input type="password" id="loginPassword" required>
+                            <button type="button" class="show-password" id="showPasswordBtn">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="form-options">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="rememberMe">
+                                <span>Remember me</span>
+                            </label>
+                            <a href="#" id="forgotPassword">Forgot password?</a>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary btn-login-submit">
+                            <i class="fas fa-sign-in-alt"></i> Sign In
+                        </button>
+                        
+                        <div class="login-divider">
+                            <span>or</span>
+                        </div>
+                        
+                        <div class="alternative-login">
+                            <p>Don't have an account?</p>
+                            <button type="button" class="btn-secondary" id="createAccountBtn">
+                                Create Government Account
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div class="modal" id="confirmationModal">
+            <div class="modal-content">
+                <button class="modal-close" id="confirmationModalClose">&times;</button>
+                <div class="modal-body" id="confirmationBody">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="home.js"></script>
+</body>
+</html>
